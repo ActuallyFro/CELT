@@ -200,6 +200,14 @@ elif [[ "$1" == "sessions" ]] || [[ "$1" == "list-sessions" ]]; then
    tmux ls
 elif [[ "$1" == "" ]]; then
    FindMUX=`tmux ls | grep $MainMUX`
+
+   if [[ -f "celt.conf" ]]; then
+      CeltConfPresent="true"
+      echo "Config file FOUND... loading!"
+   else
+      echo "No Config file... Loading the default settings!"
+   fi
+
    if [[ "$FindMUX" == "" ]]; then
       tmux new -s $MainMUX -d
       tmux rename-window -t $MainMUX:0 ${Sessions[0]}
