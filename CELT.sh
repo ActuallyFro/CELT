@@ -2,11 +2,14 @@
 Version="1.0.0"
 Name="CELT"
 url="https://raw.githubusercontent.com/ActuallyFro/CELT/master/celt.sh"
+CurrDir=`pwd`
+
 
 defaultUser=`whoami`
 MainMUX="CELT"
 CeltConfPresent="false"
 Sessions=(Notes Info Nano Vim Links)
+SessionsCMDs=(./CELT.sh\ --help echo echo echo links)
 
 read -d '' HelpMessage << EOF
 CLI Environment Launcher for TMUX ($Name) v$Version
@@ -18,7 +21,7 @@ It's left to the developer to hodgepodge their code with this script.
 
 Commands
 --------
-1. $0: Launches the tmux session ("$MainMUX") with configured windows
+1. $0 Launches the tmux session ("$MainMUX") with configured windows
 2. $0 killall (or restart): Kills ALL tmux sessions
 3. $0 adduser (or useradd): Adds session with different name than "$defaultUser"
 4. $0 connectas: Joins to "$MainMUX" as a specified user (see adduser above)
@@ -201,9 +204,28 @@ elif [[ "$1" == "sessions" ]] || [[ "$1" == "list-sessions" ]]; then
 elif [[ "$1" == "" ]]; then
    FindMUX=`tmux ls | grep $MainMUX`
 
-   if [[ -f "celt.conf" ]]; then
+   if [[ -f "./celt.conf" ]]; then
       CeltConfPresent="true"
       echo "Config file FOUND... loading!"
+      CountSessions=`cat $CurrDir/celt.conf  | grep -v "#" | grep . | grep "CELT_Session" | grep "_Name" | wc -l`
+      TotalSessions=${#Sessions}
+
+      if [[ $TotalSessions -gt $CountSessions ]]; then
+         echo "WARNING: Less Windows then default! Re-rolling the array..."
+         Sessions=( First Second )
+         SessionsCMDs=( echo echo )
+      fi
+
+      NewSessions=$(( CountSessions - 1 ))
+      #for i in `seq 1 $CountSessions`; do
+      for i in `seq 0 $NewSessions`; do
+         CurrSession=`cat $CurrDir/celt.conf | grep "CELT_Session"$i"_Name" | tr "=" "\n" | grep -v "CELT_Session" | grep . | tr -d "\""`
+         echo "Adding new Sessions[$i]: $CurrSession"
+         CurrCMD=`cat $CurrDir/celt.conf | grep "CELT_Session"$i"_CMD" | tr "=" "\n" | grep -v "CELT_Session" | grep . | tr -d "\""`
+         echo "Adding new SessionsCMDs[$i]: $CurrCMD"
+         Sessions[$i]="$CurrSession"
+         SessionsCMDs[$i]="$CurrCMD"
+      done
    else
       echo "No Config file... Loading the default settings!"
    fi
@@ -211,10 +233,15 @@ elif [[ "$1" == "" ]]; then
    if [[ "$FindMUX" == "" ]]; then
       tmux new -s $MainMUX -d
       tmux rename-window -t $MainMUX:0 ${Sessions[0]}
+      tmux send -t $MainMUX:0 "${SessionsCMDs[0]}" ENTER
       tmux neww -t $MainMUX -n ${Sessions[1]}
+      tmux send -t $MainMUX:1 "${SessionsCMDs[1]}" ENTER
       tmux neww -t $MainMUX -n ${Sessions[2]}
+      tmux send -t $MainMUX:2 "${SessionsCMDs[2]}" ENTER
       tmux neww -t $MainMUX -n ${Sessions[3]}
+      tmux send -t $MainMUX:3 "${SessionsCMDs[3]}" ENTER
       tmux neww -t $MainMUX -n ${Sessions[4]}
+      tmux send -t $MainMUX:4 "${SessionsCMDs[4]}" ENTER
 
       #Tmux Settings
          tmux set -g history-limit 10000
