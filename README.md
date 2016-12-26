@@ -1,7 +1,7 @@
 CLI Environment Launcher for TMUX (CELT)
 ========================================
 
-TL;DR: It launches tmux with default windows
+TL;DR: It launches tmux with default windows each having an associated command.
 
 About
 -----

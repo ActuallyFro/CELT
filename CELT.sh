@@ -9,7 +9,7 @@ defaultUser=`whoami`
 MainMUX="CELT"
 CeltConfPresent="false"
 Sessions=(Notes Info Nano Vim Links)
-SessionsCMDs=(./CELT.sh\ --help echo echo echo links)
+SessionsCMDs=(./CELT.sh\ --help whoami nano\ --version vim\ --version links)
 
 read -d '' HelpMessage << EOF
 CLI Environment Launcher for TMUX ($Name) v$Version
@@ -204,13 +204,14 @@ elif [[ "$1" == "sessions" ]] || [[ "$1" == "list-sessions" ]]; then
 elif [[ "$1" == "" ]]; then
    FindMUX=`tmux ls | grep $MainMUX`
 
+   TotalSessions=${#Sessions}
    if [[ -f "./celt.conf" ]]; then
       CeltConfPresent="true"
       echo "Config file FOUND... loading!"
       CountSessions=`cat $CurrDir/celt.conf  | grep -v "#" | grep . | grep "CELT_Session" | grep "_Name" | wc -l`
-      TotalSessions=${#Sessions}
 
       if [[ $TotalSessions -gt $CountSessions ]]; then
+         TotalSessions=$CountSessions
          echo "WARNING: Less Windows then default! Re-rolling the array..."
          Sessions=( First Second )
          SessionsCMDs=( echo echo )
@@ -231,17 +232,25 @@ elif [[ "$1" == "" ]]; then
    fi
 
    if [[ "$FindMUX" == "" ]]; then
+      echo "Starting TMUX under: $MainMUX"
       tmux new -s $MainMUX -d
+      echo "Starting Session[0] - ${Sessions[0]} (with command: ${SessionsCMDs[0]})"
       tmux rename-window -t $MainMUX:0 ${Sessions[0]}
       tmux send -t $MainMUX:0 "${SessionsCMDs[0]}" ENTER
-      tmux neww -t $MainMUX -n ${Sessions[1]}
-      tmux send -t $MainMUX:1 "${SessionsCMDs[1]}" ENTER
-      tmux neww -t $MainMUX -n ${Sessions[2]}
-      tmux send -t $MainMUX:2 "${SessionsCMDs[2]}" ENTER
-      tmux neww -t $MainMUX -n ${Sessions[3]}
-      tmux send -t $MainMUX:3 "${SessionsCMDs[3]}" ENTER
-      tmux neww -t $MainMUX -n ${Sessions[4]}
-      tmux send -t $MainMUX:4 "${SessionsCMDs[4]}" ENTER
+
+      NewSessions=$(( TotalSessions - 1 ))
+      for Number in `seq 1 $NewSessions`; do
+         echo "Starting Session[$Number] - ${Sessions[$Number]} (with command: ${SessionsCMDs[$Number]})"
+         tmux neww -t $MainMUX -n ${Sessions[$Number]}
+         tmux send -t $MainMUX:$Number "${SessionsCMDs[$Number]}" ENTER
+      done
+
+#      tmux neww -t $MainMUX -n ${Sessions[2]}
+#      tmux send -t $MainMUX:2 "${SessionsCMDs[2]}" ENTER
+#      tmux neww -t $MainMUX -n ${Sessions[3]}
+#      tmux send -t $MainMUX:3 "${SessionsCMDs[3]}" ENTER
+#      tmux neww -t $MainMUX -n ${Sessions[4]}
+#      tmux send -t $MainMUX:4 "${SessionsCMDs[4]}" ENTER
 
       #Tmux Settings
          tmux set -g history-limit 10000
