@@ -1,5 +1,5 @@
 #!/bin/bash
-Version="1.0.0"
+Version="1.1.0"
 Name="CELT"
 url="https://raw.githubusercontent.com/ActuallyFro/CELT/master/celt.sh"
 CurrDir=`pwd`
@@ -34,6 +34,7 @@ Other Options
 --version - print version number
 --install - copy this script to /bin/($Name)
 --update  - update to the most recent GitHub commit
+--init    - creates a default celt.conf (also: --init-config)
 EOF
 
 read -d '' License << EOF
@@ -55,6 +56,20 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+EOF
+
+read -d '' CeltConf << EOF
+#This is an example CELT config file
+# -- to see how this works rename this to 'celt.conf;
+
+CELT_Session0_Name="List Dir"
+CELT_Session0_CMD="ls -haltr"
+
+CELT_Session1_Name="Links"
+CELT_Session1_CMD="links"
+
+CELT_Session2_Name="Greed"
+CELT_Session2_CMD="greed"
 EOF
 
 #######################################
@@ -93,6 +108,16 @@ if [[ "$OType_1" == "--version" ]];then
    echo ""
    echo "Version: $Version"
    echo "md5 (less last line): "`cat $0 | grep -v "###" | md5sum | awk '{print $1}'`
+   exit
+fi
+
+if [[ "$OType_1" == "--init" ]] || [[ "$OType_1" == "--init-conf" ]];then
+   if [[ ! -f "./celt.conf" ]]; then
+      echo "$CeltConf" > ./celt.conf
+      echo "[CELT] The default celt.conf file has been created!"
+   else
+      echo "[ERROR] The celt config exists!"
+   fi
    exit
 fi
 
@@ -297,4 +322,4 @@ fi
 
 echo ""
 
-### Current File MD5 (less this line): ed9b84139ad87bebf74e45a221ffc5eb
+### Current File MD5 (less this line): 213c400763f1ed24b866c469249d4de6
