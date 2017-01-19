@@ -1,7 +1,7 @@
 #!/bin/bash
-Version="1.1.0"
+Version="1.1.1"
 Name="CELT"
-url="https://raw.githubusercontent.com/ActuallyFro/CELT/master/celt.sh"
+url="https://raw.githubusercontent.com/ActuallyFro/CELT/master/CELT.sh"
 CurrDir=`pwd`
 
 
@@ -322,4 +322,4 @@ fi
 
 echo ""
 
-### Current File MD5 (less this line): 213c400763f1ed24b866c469249d4de6
+### Current File MD5 (less this line): 49a774fed657ae04ad80afaf295d7791
